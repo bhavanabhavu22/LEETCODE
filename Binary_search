@@ -1,0 +1,22 @@
+class Solution {
+    public int search(int[] nums, int target) {
+
+        int lef = 0;
+        int righ = nums.length - 1;
+
+        while (lef <= righ) {
+
+            int mid = lef + (righ - lef) / 2;
+
+            if (nums[mid] == target) {
+                return mid;
+            } else if (nums[mid] < target) {
+                lef = mid + 1;
+            } else {
+                righ = mid - 1;
+            }
+        }
+
+        return -1;
+    }
+}
