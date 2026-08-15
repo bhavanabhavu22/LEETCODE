@@ -1,0 +1,28 @@
+class Solution {
+    public int longestSubsequence(int[] nums) {
+
+        int XOR = 0;
+        boolean NonZero = false;
+
+        for (int num : nums) {
+            XOR ^= num;
+
+            if (num != 0) {
+                NonZero = true;
+            }
+        }
+
+        // Whole array has non-zero XOR
+        if (XOR != 0) {
+            return nums.length;
+        }
+
+        // XOR is 0, remove one non-zero element
+        if (NonZero) {
+            return nums.length - 1;
+        }
+
+        // All elements are 0
+        return 0;
+    }
+}
