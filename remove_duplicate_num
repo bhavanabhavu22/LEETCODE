@@ -1,0 +1,45 @@
+import java.util.*;
+
+class Solution {
+    public String removeDuplicateLetters(String s) {
+
+        int[] count = new int[26];
+
+        // Count frequency of each character
+        for (char c : s.toCharArray()) {
+            count[c - 'a']++;
+        }
+
+        Stack<Character> stack = new Stack<>();
+        boolean[] used = new boolean[26];
+
+        for (char c : s.toCharArray()) {
+
+            count[c - 'a']--;
+
+            // Already present in result
+            if (used[c - 'a']) {
+                continue;
+            }
+
+            // Remove bigger characters if they appear again later
+            while (!stack.isEmpty()
+                    && stack.peek() > c
+                    && count[stack.peek() - 'a'] > 0) {
+
+                used[stack.pop() - 'a'] = false;
+            }
+
+            stack.push(c);
+            used[c - 'a'] = true;
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        for (char c : stack) {
+            result.append(c);
+        }
+
+        return result.toString();
+    }
+}
