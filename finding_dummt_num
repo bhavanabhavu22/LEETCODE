@@ -1,0 +1,23 @@
+class Solution {
+    public int findDuplicate(int[] nums) {
+
+        int lag = nums[0];
+        int speed = nums[0];
+
+        // Find intersection point
+        do {
+            lag = nums[lag];
+            speed = nums[nums[speed]];
+        } while (lag != speed);
+
+        // Find duplicate number
+        lag = nums[0];
+
+        while (lag != speed) {
+            lag = nums[lag];
+            speed = nums[speed];
+        }
+
+        return lag;
+    }
+}
