@@ -1,0 +1,38 @@
+class Solution {
+    public boolean sumGame(String num) {
+        int leftSum = 0;
+        int rightSum = 0;
+        int leftQ = 0;
+        int rightQ = 0;
+
+        int n = num.length();
+
+        for (int i = 0; i < n; i++) {
+            if (i < n / 2) {
+                if (num.charAt(i) == '?') {
+                    leftQ++;
+                } else {
+                    leftSum += num.charAt(i) - '0';
+                }
+            } else {
+                if (num.charAt(i) == '?') {
+                    rightQ++;
+                } else {
+                    rightSum += num.charAt(i) - '0';
+                }
+            }
+        }
+
+        // If the difference in question marks is odd,
+        // Alice can always force a win.
+        if ((leftQ - rightQ) % 2 != 0) {
+            return true;
+        }
+
+        int diff = leftSum - rightSum;
+
+        // Alice wins if the existing difference cannot be
+        // perfectly balanced by Bob's optimal moves.
+        return diff != (rightQ - leftQ) / 2 * 9;
+    }
+}
