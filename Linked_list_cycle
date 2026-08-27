@@ -1,0 +1,19 @@
+public class Solution {
+    public boolean hasCycle(ListNode head) {
+
+        ListNode lag= head;
+        ListNode speed = head;
+
+        while (speed != null && speed.next != null) {
+
+            lag = lag.next;
+            speed = speed.next.next;
+
+            if (lag == speed) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
