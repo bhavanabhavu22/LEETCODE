@@ -1,0 +1,92 @@
+import java.util.*;
+
+class Solution {
+    public String lexGreaterPermutation(String s, String target) {
+        char[] chars = s.toCharArray();
+        Arrays.sort(chars);
+
+        // Try to construct the smallest permutation > target
+        String result = build(chars, target);
+
+        return result;
+    }
+
+    private String build(char[] chars, String target) {
+        int n = chars.length;
+
+        for (int i = n - 1; i >= 0; i--) {
+            // Check whether prefix [0 ... i-1] can match target
+            char[] remaining = chars.clone();
+
+            boolean possible = true;
+
+            // Match target[0...i-1]
+            for (int j = 0; j < i; j++) {
+                int pos = find(remaining, target.charAt(j));
+
+                if (pos == -1) {
+                    possible = false;
+                    break;
+                }
+
+                remaining[pos] = '#';
+            }
+
+            if (!possible) continue;
+
+            // At position i, choose the smallest character
+            // greater than target[i]
+            char best = '{';
+            int bestPos = -1;
+
+            for (int j = 0; j < n; j++) {
+                if (remaining[j] != '#' &&
+                    remaining[j] > target.charAt(i) &&
+                    remaining[j] < best) {
+                    best = remaining[j];
+                    bestPos = j;
+                }
+            }
+
+            if (bestPos != -1) {
+                remaining[bestPos] = '#';
+
+                StringBuilder ans = new StringBuilder();
+
+                // Prefix
+                for (int j = 0; j < i; j++) {
+                    ans.append(target.charAt(j));
+                }
+
+                // Greater character
+                ans.append(best);
+
+                // Remaining characters in sorted order
+                char[] rest = new char[n - i - 1];
+                int k = 0;
+
+                for (char c : remaining) {
+                    if (c != '#') {
+                        rest[k++] = c;
+                    }
+                }
+
+                Arrays.sort(rest);
+                ans.append(rest);
+
+                return ans.toString();
+            }
+        }
+
+        return "";
+    }
+
+    private int find(char[] arr, char c) {
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == c) {
+                return i;
+            }
+        }
+        return -1;
+    }
+}
