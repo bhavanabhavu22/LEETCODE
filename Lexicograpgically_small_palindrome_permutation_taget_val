@@ -1,0 +1,178 @@
+class Solution {
+    public String lexPalindromicPermutation(String s, String target) {
+        int n = s.length();
+
+        // Count characters
+        int[] count = new int[26];
+
+        for (char c : s.toCharArray()) {
+            count[c - 'a']++;
+        }
+
+        // A palindrome can have at most one character
+        // with an odd frequency.
+        int odd = 0;
+        char middle = 0;
+
+        for (int i = 0; i < 26; i++) {
+            if (count[i] % 2 == 1) {
+                odd++;
+                middle = (char) ('a' + i);
+            }
+        }
+
+        if (odd > 1) {
+            return "";
+        }
+
+        // Characters available for the left half
+        int halfLen = n / 2;
+        int[] halfCount = new int[26];
+
+        for (int i = 0; i < 26; i++) {
+            halfCount[i] = count[i] / 2;
+        }
+
+        String best = "";
+
+        /*
+         * CASE 1:
+         * Find the smallest left half which is
+         * lexicographically greater than target's left half.
+         */
+        String greaterHalf = nextGreaterHalf(
+            target.substring(0, halfLen),
+            halfCount
+        );
+
+        if (greaterHalf != null) {
+            String candidate = makePalindrome(greaterHalf, middle, n);
+
+            if (candidate.compareTo(target) > 0) {
+                best = candidate;
+            }
+        }
+
+        /*
+         * CASE 2:
+         * The left half is exactly target's left half.
+         *
+         * Even if the halves are equal, the complete palindrome
+         * can still be greater than target because of the
+         * middle/right side.
+         */
+        String equalHalf = buildEqualHalf(
+            target.substring(0, halfLen),
+            halfCount
+        );
+
+        if (equalHalf != null) {
+            String candidate = makePalindrome(equalHalf, middle, n);
+
+            if (candidate.compareTo(target) > 0) {
+                if (best.equals("") || candidate.compareTo(best) < 0) {
+                    best = candidate;
+                }
+            }
+        }
+
+        return best;
+    }
+
+    // Find the smallest permutation of the available half
+    // that is strictly greater than targetHalf.
+    private String nextGreaterHalf(String targetHalf, int[] original) {
+        int m = targetHalf.length();
+
+        // Try changing the rightmost possible position first.
+        for (int pivot = m - 1; pivot >= 0; pivot--) {
+
+            int[] remaining = original.clone();
+
+            // Match targetHalf[0 ... pivot-1]
+            boolean possible = true;
+
+            for (int i = 0; i < pivot; i++) {
+                int x = targetHalf.charAt(i) - 'a';
+
+                if (remaining[x] == 0) {
+                    possible = false;
+                    break;
+                }
+
+                remaining[x]--;
+            }
+
+            if (!possible) {
+                continue;
+            }
+
+            // At pivot, choose the smallest character
+            // strictly greater than target[pivot].
+            int targetChar = targetHalf.charAt(pivot) - 'a';
+
+            for (int c = targetChar + 1; c < 26; c++) {
+                if (remaining[c] > 0) {
+
+                    StringBuilder result = new StringBuilder();
+
+                    // Same prefix
+                    for (int i = 0; i < pivot; i++) {
+                        result.append(targetHalf.charAt(i));
+                    }
+
+                    // First greater character
+                    result.append((char) ('a' + c));
+                    remaining[c]--;
+
+                    // Smallest possible suffix
+                    for (int ch = 0; ch < 26; ch++) {
+                        while (remaining[ch] > 0) {
+                            result.append((char) ('a' + ch));
+                            remaining[ch]--;
+                        }
+                    }
+
+                    return result.toString();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // Check whether targetHalf itself can be constructed
+    // from the available characters.
+    private String buildEqualHalf(String targetHalf, int[] original) {
+        int[] remaining = original.clone();
+
+        for (char c : targetHalf.toCharArray()) {
+            int x = c - 'a';
+
+            if (remaining[x] == 0) {
+                return null;
+            }
+
+            remaining[x]--;
+        }
+
+        return targetHalf;
+    }
+
+    // Build the complete palindrome from its left half.
+    private String makePalindrome(String left, char middle, int n) {
+        StringBuilder result = new StringBuilder();
+
+        result.append(left);
+
+        if (n % 2 == 1) {
+            result.append(middle);
+        }
+
+        for (int i = left.length() - 1; i >= 0; i--) {
+            result.append(left.charAt(i));
+        }
+
+        return result.toString();
+    }
+}
