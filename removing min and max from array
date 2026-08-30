@@ -1,0 +1,38 @@
+class Solution {
+    public int minimumDeletions(int[] nums) {
+
+        int z = nums.length;
+
+        int Indexmin = 0;
+        int Indexmax = 0;
+
+        // Find min and max indices
+        for (int i = 1; i < z; i++) {
+            if (nums[i] < nums[Indexmin]) {
+                Indexmin = i;
+            }
+
+            if (nums[i] > nums[Indexmax]) {
+                Indexmax = i;
+            }
+        }
+
+        // Make minIndex the smaller index
+        if (Indexmin > Indexmax) {
+            int temp = Indexmin;
+            Indexmin = Indexmax;
+            Indexmax = temp;
+        }
+
+        // Option 1: Remove both from left
+        int leftside = Indexmax + 1;
+
+        // Option 2: Remove both from right
+        int rightside = z - Indexmin;
+
+        // Option 3: Remove min from left, max from right
+        int mixed = (Indexmin + 1) + (z - Indexmax);
+
+        return Math.min(leftside, Math.min(rightside, mixed));
+    }
+}
