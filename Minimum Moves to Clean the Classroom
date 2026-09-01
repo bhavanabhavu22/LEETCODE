@@ -1,0 +1,136 @@
+import java.util.*;
+
+class Solution {
+    public int minMoves(String[] classroom, int energy) {
+
+        int m = classroom.length;
+        int n = classroom[0].length();
+
+        int[][] litterId = new int[m][n];
+
+        int Row = 0;
+        int Col = 0;
+        int Count = 0;
+
+        // Find starting position and give each litter an ID
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+
+                char c = classroom[i].charAt(j);
+
+                if (c == 'S') {
+                    Row = i;
+                    Col = j;
+                } 
+                else if (c == 'L') {
+                    litterId[i][j] = Count;
+                    Count++;
+                }
+            }
+        }
+
+        // No litter
+        if (Count == 0) {
+            return 0;
+        }
+
+        int totalMasks = 1 << Count;
+
+        // visited[row][col][energy][mask]
+        boolean[][][][] visited =
+            new boolean[m][n][energy + 1][totalMasks];
+
+        Queue<int[]> queue = new LinkedList<>();
+
+        // Initially no litter is collected
+        int startMask = 0;
+
+        queue.offer(new int[]{
+            Row,
+            Col,
+            energy,
+            startMask
+        });
+
+        visited[Row][Col][energy][startMask] = true;
+
+        int moves = 0;
+
+        int[] dr = {-1, 1, 0, 0};
+        int[] dc = {0, 0, -1, 1};
+
+        while (!queue.isEmpty()) {
+
+            int size = queue.size();
+
+            while (size-- > 0) {
+
+                int[] current = queue.poll();
+
+                int r = current[0];
+                int c = current[1];
+                int currEnergy = current[2];
+                int mask = current[3];
+
+                // All litter collected
+                if (mask == totalMasks - 1) {
+                    return moves;
+                }
+
+                // Cannot move without energy
+                if (currEnergy == 0) {
+                    continue;
+                }
+
+                for (int d = 0; d < 4; d++) {
+
+                    int nr = r + dr[d];
+                    int nc = c + dc[d];
+
+                    // Outside grid
+                    if (nr < 0 || nr >= m || nc < 0 || nc >= n) {
+                        continue;
+                    }
+
+                    // Obstacle
+                    if (classroom[nr].charAt(nc) == 'X') {
+                        continue;
+                    }
+
+                    int nextEnergy = currEnergy - 1;
+
+                    char cell = classroom[nr].charAt(nc);
+
+                    // Reset area
+                    if (cell == 'R') {
+                        nextEnergy = energy;
+                    }
+
+                    int nextMask = mask;
+
+                    // Collect litter
+                    if (cell == 'L') {
+                        int identity = litterId[nr][nc];
+                        nextMask = mask | (1 << identity);
+                    }
+
+                    if (!visited[nr][nc][nextEnergy][nextMask]) {
+
+                        visited[nr][nc][nextEnergy][nextMask] = true;
+
+                        queue.offer(new int[]{
+                            nr,
+                            nc,
+                            nextEnergy,
+                            nextMask
+                        });
+                    }
+                }
+            }
+
+            moves++;
+        }
+
+        return -1;
+    }
+}
