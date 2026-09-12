@@ -1,0 +1,162 @@
+import java.util.*;
+
+class Solution {
+
+    static class State {
+        long score;
+        int[] indices;
+
+        State(long score, int[] indices) {
+            this.score = score;
+            this.indices = indices;
+        }
+    }
+
+    public int[] maximumWeight(List<List<Integer>> intervals) {
+
+        int n = intervals.size();
+
+        // Store: start, end, weight, original index
+        int[][] arr = new int[n][4];
+
+        for (int i = 0; i < n; i++) {
+            arr[i][0] = intervals.get(i).get(0); // start
+            arr[i][1] = intervals.get(i).get(1); // end
+            arr[i][2] = intervals.get(i).get(2); // weight
+            arr[i][3] = i;                       // original index
+        }
+
+        // Sort by ending time
+        Arrays.sort(arr, (a, b) -> {
+            if (a[1] != b[1])
+                return Integer.compare(a[1], b[1]);
+
+            if (a[0] != b[0])
+                return Integer.compare(a[0], b[0]);
+
+            return Integer.compare(a[3], b[3]);
+        });
+
+        // prev[i] = last interval that ends before arr[i] starts
+        int[] prev = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            int left = 0;
+            int right = i - 1;
+            int answer = -1;
+
+            while (left <= right) {
+                int mid = left + (right - left) / 2;
+
+                if (arr[mid][1] < arr[i][0]) {
+                    answer = mid;
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
+                }
+            }
+
+            prev[i] = answer;
+        }
+
+        /*
+         * dp[i][k] =
+         * best answer using first i intervals
+         * with at most k intervals selected.
+         */
+        State[][] dp = new State[n + 1][5];
+
+        // Empty answer
+        for (int k = 0; k <= 4; k++) {
+            dp[0][k] = new State(0L, new int[0]);
+        }
+
+        for (int i = 1; i <= n; i++) {
+
+            int idx = i - 1;
+
+            for (int k = 0; k <= 4; k++) {
+
+                // Option 1: don't take current interval
+                State skip = dp[i - 1][k];
+
+                State best = skip;
+
+                // Option 2: take current interval
+                if (k > 0) {
+
+                    int previous = prev[idx];
+
+                    State previousState = dp[previous + 1][k - 1];
+
+                    // IMPORTANT: long prevents overflow
+                    long newScore =
+                            previousState.score + (long) arr[idx][2];
+
+                    // Add original index
+                    int[] newIndices =
+                            addIndex(previousState.indices, arr[idx][3]);
+
+                    State take = new State(newScore, newIndices);
+
+                    best = better(skip, take);
+                }
+
+                dp[i][k] = best;
+            }
+        }
+
+        return dp[n][4].indices;
+    }
+
+    // Add index and keep indices sorted
+    private int[] addIndex(int[] old, int index) {
+
+        int[] result = Arrays.copyOf(old, old.length + 1);
+
+        result[old.length] = index;
+
+        Arrays.sort(result);
+
+        return result;
+    }
+
+    /*
+     * Choose the better state:
+     *
+     * 1. Higher score
+     * 2. If scores equal, lexicographically smaller indices
+     */
+    private State better(State a, State b) {
+
+        if (a.score > b.score)
+            return a;
+
+        if (b.score > a.score)
+            return b;
+
+        // Same score -> lexicographical comparison
+        if (isLexicographicallySmaller(a.indices, b.indices))
+            return a;
+
+        return b;
+    }
+
+    private boolean isLexicographicallySmaller(int[] a, int[] b) {
+
+        int len = Math.min(a.length, b.length);
+
+        for (int i = 0; i < len; i++) {
+
+            if (a[i] < b[i])
+                return true;
+
+            if (a[i] > b[i])
+                return false;
+        }
+
+        // If one is prefix of the other,
+        // shorter array is lexicographically smaller
+        return a.length < b.length;
+    }
+}
