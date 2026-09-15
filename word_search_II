@@ -1,0 +1,104 @@
+import java.util.*;
+
+class Solution {
+
+    class TrieNode {
+        TrieNode[] children = new TrieNode[26];
+        String word;
+    }
+
+    TrieNode root = new TrieNode();
+
+    List<String> result = new ArrayList<>();
+
+    public List<String> findWords(char[][] board, String[] words) {
+
+        // Build Trie
+        for (String word : words) {
+            insert(word);
+        }
+
+        int rows = board.length;
+        int cols = board[0].length;
+
+        // Start DFS from every cell
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+
+                char ch = board[r][c];
+
+                if (root.children[ch - 'a'] != null) {
+                    dfs(board, r, c, root);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private void insert(String word) {
+
+        TrieNode current = root;
+
+        for (char ch : word.toCharArray()) {
+
+            int index = ch - 'a';
+
+            if (current.children[index] == null) {
+                current.children[index] = new TrieNode();
+            }
+
+            current = current.children[index];
+        }
+
+        current.word = word;
+    }
+
+    private void dfs(char[][] board, int row, int col, TrieNode node) {
+
+        char ch = board[row][col];
+
+        int index = ch - 'a';
+
+        TrieNode next = node.children[index];
+
+        if (next == null) {
+            return;
+        }
+
+        // Found a complete word
+        if (next.word != null) {
+
+            result.add(next.word);
+
+            // Prevent duplicate result
+            next.word = null;
+        }
+
+        // Mark current cell as visited
+        board[row][col] = '#';
+
+        // Up
+        if (row > 0 && board[row - 1][col] != '#') {
+            dfs(board, row - 1, col, next);
+        }
+
+        // Down
+        if (row + 1 < board.length && board[row + 1][col] != '#') {
+            dfs(board, row + 1, col, next);
+        }
+
+        // Left
+        if (col > 0 && board[row][col - 1] != '#') {
+            dfs(board, row, col - 1, next);
+        }
+
+        // Right
+        if (col + 1 < board[0].length && board[row][col + 1] != '#') {
+            dfs(board, row, col + 1, next);
+        }
+
+        // Restore cell
+        board[row][col] = ch;
+    }
+}
