@@ -1,0 +1,29 @@
+class Solution {
+
+    static final long MOD = 1_000_000_007L;
+
+    public int numberOfSets(int n, int k) {
+
+        int total = n + k - 1;
+        int choose = 2 * k;
+
+        long[][] dp = new long[total + 1][choose + 1];
+
+        // C(i, 0) = 1
+        for (int i = 0; i <= total; i++) {
+            dp[i][0] = 1;
+        }
+
+        // Calculate combinations using Pascal's Triangle
+        for (int i = 1; i <= total; i++) {
+
+            for (int j = 1; j <= Math.min(i, choose); j++) {
+
+                dp[i][j] =
+                    (dp[i - 1][j - 1] + dp[i - 1][j]) % MOD;
+            }
+        }
+
+        return (int) dp[total][choose];
+    }
+}
