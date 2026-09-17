@@ -1,0 +1,65 @@
+import java.util.*;
+
+class Solution {
+
+    public int minSumOfLengths(int[] arr, int target) {
+
+        int n = arr.length;
+
+        // best[i] = minimum length of a target-sum
+        // subarray ending at or before i
+        int[] best = new int[n];
+
+        Arrays.fill(best, Integer.MAX_VALUE);
+
+        Map<Integer, Integer> map = new HashMap<>();
+
+        // prefix sum 0 occurs before the array starts
+        map.put(0, -1);
+
+        int prefix = 0;
+        int answer = Integer.MAX_VALUE;
+
+        for (int i = 0; i < n; i++) {
+
+            prefix += arr[i];
+
+            // Carry forward previous best
+            if (i > 0) {
+                best[i] = best[i - 1];
+            }
+
+            // Find previous prefix
+            if (map.containsKey(prefix - target)) {
+
+                int start = map.get(prefix - target);
+
+                int length = i - start;
+
+                // Need another subarray before this one
+                if (start >= 0 && best[start] != Integer.MAX_VALUE) {
+
+                    answer = Math.min(
+                        answer,
+                        length + best[start]
+                    );
+                }
+
+                // This is a valid target-sum subarray
+                best[i] = Math.min(best[i], length);
+
+            } else if (prefix == target) {
+
+                // Subarray starts from index 0
+                int length = i + 1;
+
+                best[i] = Math.min(best[i], length);
+            }
+
+            // Store latest prefix index
+            map.put(prefix, i);
+        }
+
+        return answer == Integer.MAX_VALUE ? -1 : answer;
+    }
+}
