@@ -1,0 +1,110 @@
+import java.util.*;
+
+class Solution {
+
+    public List<List<Integer>> pacificAtlantic(int[][] heights) {
+
+        int rows = heights.length;
+        int cols = heights[0].length;
+
+        boolean[][] pacific = new boolean[rows][cols];
+        boolean[][] atlantic = new boolean[rows][cols];
+
+        Queue<int[]> pq = new LinkedList<>();
+        Queue<int[]> aq = new LinkedList<>();
+
+        // Pacific: top row
+        for (int c = 0; c < cols; c++) {
+            pacific[0][c] = true;
+            pq.offer(new int[]{0, c});
+        }
+
+        // Pacific: left column
+        for (int r = 0; r < rows; r++) {
+            if (!pacific[r][0]) {
+                pacific[r][0] = true;
+                pq.offer(new int[]{r, 0});
+            }
+        }
+
+        // Atlantic: bottom row
+        for (int c = 0; c < cols; c++) {
+            atlantic[rows - 1][c] = true;
+            aq.offer(new int[]{rows - 1, c});
+        }
+
+        // Atlantic: right column
+        for (int r = 0; r < rows; r++) {
+            if (!atlantic[r][cols - 1]) {
+                atlantic[r][cols - 1] = true;
+                aq.offer(new int[]{r, cols - 1});
+            }
+        }
+
+        bfs(heights, pq, pacific);
+        bfs(heights, aq, atlantic);
+
+        List<List<Integer>> result = new ArrayList<>();
+
+        // Cells reachable from BOTH oceans
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+
+                if (pacific[r][c] && atlantic[r][c]) {
+                    result.add(Arrays.asList(r, c));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private void bfs(
+            int[][] heights,
+            Queue<int[]> queue,
+            boolean[][] visited) {
+
+        int rows = heights.length;
+        int cols = heights[0].length;
+
+        int[][] directions = {
+            {1, 0},
+            {-1, 0},
+            {0, 1},
+            {0, -1}
+        };
+
+        while (!queue.isEmpty()) {
+
+            int[] current = queue.poll();
+
+            int r = current[0];
+            int c = current[1];
+
+            for (int[] dir : directions) {
+
+                int nr = r + dir[0];
+                int nc = c + dir[1];
+
+                // Boundary check
+                if (nr < 0 || nr >= rows ||
+                    nc < 0 || nc >= cols) {
+                    continue;
+                }
+
+                // Already visited
+                if (visited[nr][nc]) {
+                    continue;
+                }
+
+                // Reverse water-flow condition
+                if (heights[nr][nc] < heights[r][c]) {
+                    continue;
+                }
+
+                visited[nr][nc] = true;
+                queue.offer(new int[]{nr, nc});
+            }
+        }
+    }
+}
